@@ -1,12 +1,12 @@
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <iostream>
-#include <vector>
 
 #include "classifier/classifier.h"
 
 void test_empty_features() {
-    classifier::Classifier model;
+    classifier::Classifier<0> model;
     auto result = model.classify({});
     assert(result.label == "unknown");
     assert(result.confidence == 0.0);
@@ -14,7 +14,7 @@ void test_empty_features() {
 }
 
 void test_positive_classification() {
-    classifier::Classifier model;
+    classifier::Classifier<3> model;
     auto result = model.classify({0.8, 0.6, 0.9});
     assert(result.label == "positive");
     assert(result.confidence > 0.5);
@@ -22,7 +22,7 @@ void test_positive_classification() {
 }
 
 void test_negative_classification() {
-    classifier::Classifier model;
+    classifier::Classifier<3> model;
     auto result = model.classify({0.1, 0.2, 0.1});
     assert(result.label == "negative");
     assert(result.confidence > 0.5);

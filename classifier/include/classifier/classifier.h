@@ -1,7 +1,8 @@
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <string>
-#include <vector>
 
 namespace classifier {
 
@@ -10,12 +11,29 @@ struct Result {
     double confidence;
 };
 
+template <std::size_t N>
 class Classifier {
 public:
-    Classifier();
-    ~Classifier();
+    Classifier() = default;
+    ~Classifier() = default;
 
-    Result classify(const std::vector<double>& features) const;
+    Result classify(const std::array<double, N>& features) const {
+        if constexpr (N == 0) {
+            return {"unknown", 0.0};
+        } else {
+            double sum = 0.0;
+            for (auto val : features) {
+                sum += val;
+            }
+
+            double avg = sum / static_cast<double>(N);
+
+            if (avg >= 0.5) {
+                return {"positive", avg};
+            }
+            return {"negative", 1.0 - avg};
+        }
+    }
 };
 
 } // namespace classifier

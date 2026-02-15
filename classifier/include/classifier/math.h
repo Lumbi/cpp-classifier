@@ -1,7 +1,9 @@
 #pragma once
 
+#include <array>
 #include <cmath>
 #include <concepts>
+#include <cstddef>
 #include <numeric>
 #include <ranges>
 #include <stdexcept>
@@ -23,6 +25,11 @@ auto dot(const A& a, const B& b) -> std::ranges::range_value_t<A> {
     using T = std::ranges::range_value_t<A>;
     return std::inner_product(std::ranges::begin(a), std::ranges::end(a),
                               std::ranges::begin(b), T(0));
+}
+
+template <std::floating_point T, std::size_t N>
+T dot(const std::array<T, N>& a, const std::array<T, N>& b) {
+    return std::inner_product(a.begin(), a.end(), b.begin(), T(0));
 }
 
 } // namespace classifier
