@@ -1,5 +1,7 @@
 add_library(classifier SHARED
     src/classifier.cpp
+    src/math.cpp
+    src/model.cpp
 )
 
 target_include_directories(classifier
