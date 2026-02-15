@@ -4,11 +4,11 @@
 
 #include "classifier/classifier.h"
 
-constexpr std::string_view to_string(classifier::Label label) {
-    switch (label) {
-    case classifier::Label::positive: return "positive";
-    case classifier::Label::negative: return "negative";
-    case classifier::Label::unknown:  return "unknown";
+constexpr std::string_view to_string(classifier::Prediction prediction) {
+    switch (prediction) {
+    case classifier::Prediction::positive: return "positive";
+    case classifier::Prediction::negative: return "negative";
+    case classifier::Prediction::unknown:  return "unknown";
     }
     return "unknown";
 }
@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     std::array<double, 3> sample = {0.8, 0.6, 0.9};
     auto result = model.classify(sample);
 
-    std::cout << "Sample classification: " << to_string(result.label)
+    std::cout << "Sample classification: " << to_string(result.prediction)
               << " (confidence: " << result.confidence << ")\n";
 
     return 0;

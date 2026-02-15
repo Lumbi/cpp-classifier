@@ -5,10 +5,10 @@
 
 namespace classifier {
 
-enum class Label { unknown, positive, negative };
+enum class Prediction { unknown, positive, negative };
 
 struct Result {
-    Label label;
+    Prediction prediction;
     double confidence;
 };
 
@@ -20,7 +20,7 @@ public:
 
     Result classify(const std::array<double, N>& features) const {
         if constexpr (N == 0) {
-            return {Label::unknown, 0.0};
+            return {Prediction::unknown, 0.0};
         } else {
             double sum = 0.0;
             for (auto val : features) {
@@ -30,9 +30,9 @@ public:
             double avg = sum / static_cast<double>(N);
 
             if (avg >= 0.5) {
-                return {Label::positive, avg};
+                return {Prediction::positive, avg};
             }
-            return {Label::negative, 1.0 - avg};
+            return {Prediction::negative, 1.0 - avg};
         }
     }
 };
