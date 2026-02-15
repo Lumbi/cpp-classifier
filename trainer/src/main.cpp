@@ -1,7 +1,17 @@
 #include <array>
 #include <iostream>
+#include <string_view>
 
 #include "classifier/classifier.h"
+
+constexpr std::string_view to_string(classifier::Label label) {
+    switch (label) {
+    case classifier::Label::positive: return "positive";
+    case classifier::Label::negative: return "negative";
+    case classifier::Label::unknown:  return "unknown";
+    }
+    return "unknown";
+}
 
 int main(int argc, char* argv[]) {
     std::cout << "cpp-classifier trainer\n";
@@ -11,7 +21,7 @@ int main(int argc, char* argv[]) {
     std::array<double, 3> sample = {0.8, 0.6, 0.9};
     auto result = model.classify(sample);
 
-    std::cout << "Sample classification: " << result.label
+    std::cout << "Sample classification: " << to_string(result.label)
               << " (confidence: " << result.confidence << ")\n";
 
     return 0;

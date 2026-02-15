@@ -2,12 +2,13 @@
 
 #include <array>
 #include <cstddef>
-#include <string>
 
 namespace classifier {
 
+enum class Label { unknown, positive, negative };
+
 struct Result {
-    std::string label;
+    Label label;
     double confidence;
 };
 
@@ -19,7 +20,7 @@ public:
 
     Result classify(const std::array<double, N>& features) const {
         if constexpr (N == 0) {
-            return {"unknown", 0.0};
+            return {Label::unknown, 0.0};
         } else {
             double sum = 0.0;
             for (auto val : features) {
@@ -29,9 +30,9 @@ public:
             double avg = sum / static_cast<double>(N);
 
             if (avg >= 0.5) {
-                return {"positive", avg};
+                return {Label::positive, avg};
             }
-            return {"negative", 1.0 - avg};
+            return {Label::negative, 1.0 - avg};
         }
     }
 };
