@@ -13,7 +13,6 @@ public:
 
 private:
     std::vector<float> weights_;
-    std::vector<float> features_;
     float bias_;
 };
 
