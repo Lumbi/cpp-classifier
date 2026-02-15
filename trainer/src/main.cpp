@@ -21,8 +21,8 @@ int main(int argc, char* argv[]) {
     std::array<double, 3> sample = {0.8, 0.6, 0.9};
     auto result = model.classify(sample);
 
-    std::cout << "Sample classification: " << to_string(result.prediction)
-              << " (confidence: " << result.confidence << ")\n";
+    std::cout << "Sample classification: " << to_string(result.get_prediction())
+              << " (confidence: " << result.get_confidence() << ")\n";
 
     return 0;
 }
