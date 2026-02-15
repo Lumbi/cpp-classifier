@@ -9,6 +9,8 @@ class Model {
 public:
     explicit Model(std::size_t size);
 
+    bool classify(const std::vector<float>& features) const;
+
 private:
     std::vector<float> weights_;
     std::vector<float> features_;
