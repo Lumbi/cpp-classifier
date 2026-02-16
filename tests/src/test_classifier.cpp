@@ -3,35 +3,35 @@
 #include <cmath>
 #include <iostream>
 
-#include "classifier/classifier.h"
+#include "classifier/model.h"
 
 void test_empty_features() {
-    classifier::Classifier<0> model;
+    classifier::Model<0> model;
     auto result = model.classify({});
     assert(result.get_prediction() == classifier::Prediction::unknown);
-    assert(result.get_confidence() == 0.0);
+    assert(result.get_confidence() == 0.0f);
     std::cout << "  PASS: test_empty_features\n";
 }
 
 void test_positive_classification() {
-    classifier::Classifier<3> model;
-    model.set_weight(0, 1);
-    model.set_weight(1, 1);
-    model.set_weight(2, 1);
-    auto result = model.classify({0.8, 0.6, 0.9});
+    classifier::Model<3> model;
+    model.set_weight(0, 1.0f);
+    model.set_weight(1, 1.0f);
+    model.set_weight(2, 1.0f);
+    auto result = model.classify({0.8f, 0.6f, 0.9f});
     assert(result.get_prediction() == classifier::Prediction::positive);
-    assert(result.get_confidence() > 0.5);
+    assert(result.get_confidence() > 0.5f);
     std::cout << "  PASS: test_positive_classification\n";
 }
 
 void test_negative_classification() {
-    classifier::Classifier<3> model;
-    model.set_weight(0, -1);
-    model.set_weight(1, -1);
-    model.set_weight(2, -1);
-    auto result = model.classify({0.1, 0.2, 0.1});
+    classifier::Model<3> model;
+    model.set_weight(0, -1.0f);
+    model.set_weight(1, -1.0f);
+    model.set_weight(2, -1.0f);
+    auto result = model.classify({0.1f, 0.2f, 0.1f});
     assert(result.get_prediction() == classifier::Prediction::negative);
-    assert(result.get_confidence() > 0.5);
+    assert(result.get_confidence() > 0.5f);
     std::cout << "  PASS: test_negative_classification\n";
 }
 
