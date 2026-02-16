@@ -2,6 +2,9 @@
 
 #include <array>
 #include <cstddef>
+#include <istream>
+#include <ostream>
+#include <stdexcept>
 
 #include "classifier/math.h"
 
@@ -45,6 +48,34 @@ public:
 
     float bias() const { return bias_; }
     void set_bias(float value) { bias_ = value; }
+
+    void serialize(std::ostream& os) const {
+        std::size_t n = N;
+        os.write(reinterpret_cast<const char*>(&n), sizeof(n));
+        os.write(reinterpret_cast<const char*>(weights_.data()), sizeof(float) * N);
+        os.write(reinterpret_cast<const char*>(&bias_), sizeof(bias_));
+        if (!os) {
+            throw std::runtime_error("failed to serialize model");
+        }
+    }
+
+    void deserialize(std::istream& is) {
+        std::size_t n = 0;
+        is.read(reinterpret_cast<char*>(&n), sizeof(n));
+        if (!is) {
+            throw std::runtime_error("failed to read model header");
+        }
+        if (n != N) {
+            throw std::runtime_error(
+                "model dimension mismatch: expected " + std::to_string(N) +
+                ", got " + std::to_string(n));
+        }
+        is.read(reinterpret_cast<char*>(weights_.data()), sizeof(float) * N);
+        is.read(reinterpret_cast<char*>(&bias_), sizeof(bias_));
+        if (!is) {
+            throw std::runtime_error("failed to deserialize model");
+        }
+    }
 
 private:
     std::array<float, N> weights_;
