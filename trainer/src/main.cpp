@@ -3,6 +3,7 @@
 #include <string_view>
 
 #include "classifier/model.h"
+#include "trainer/trainer.h"
 
 constexpr std::string_view to_string(classifier::Prediction prediction) {
     switch (prediction) {
