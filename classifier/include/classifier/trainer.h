@@ -3,8 +3,9 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <istream>
 #include <stdexcept>
-#include <utility>
+#include <string>
 #include <vector>
 
 #include "classifier/math.h"
@@ -19,8 +20,38 @@ class Trainer {
 public:
     explicit Trainer(classifier::Model<N>& model) : model_(model) {}
 
-    using Sample = std::pair<std::array<float, N>, float>;
+    using Sample = std::array<float, N + 1>;
     using TrainingSet = std::vector<Sample>;
+
+    static TrainingSet deserialize_training_data(std::istream& is) {
+        std::size_t cols = 0;
+        is.read(reinterpret_cast<char*>(&cols), sizeof(cols));
+        if (!is) {
+            throw std::runtime_error("failed to read training data header");
+        }
+        if (cols != N + 1) {
+            throw std::runtime_error(
+                "training data column mismatch: expected " +
+                std::to_string(N + 1) + ", got " + std::to_string(cols));
+        }
+
+        std::size_t rows = 0;
+        is.read(reinterpret_cast<char*>(&rows), sizeof(rows));
+        if (!is) {
+            throw std::runtime_error("failed to read training data row count");
+        }
+
+        TrainingSet data(rows);
+        for (std::size_t r = 0; r < rows; ++r) {
+            is.read(reinterpret_cast<char*>(data[r].data()),
+                    sizeof(float) * (N + 1));
+            if (!is) {
+                throw std::runtime_error(
+                    "failed to read training data at row " + std::to_string(r));
+            }
+        }
+        return data;
+    }
 
     void train(const TrainingSet& data, float learning_rate = 0.1f,
                std::size_t epochs = 100,
@@ -37,10 +68,12 @@ public:
             std::array<float, N> weight_gradients{};
             float bias_gradient = 0.0f;
 
-            for (const auto& [features, label] : data) {
+            for (const auto& sample : data) {
+                float label = sample[N];
+
                 float z = 0.0f;
                 for (std::size_t i = 0; i < N; ++i) {
-                    z += model_.weight(i) * features[i];
+                    z += model_.weight(i) * sample[i];
                 }
                 z += model_.bias();
 
@@ -48,7 +81,7 @@ public:
                 float error = prediction - label;
 
                 for (std::size_t i = 0; i < N; ++i) {
-                    weight_gradients[i] += error * features[i];
+                    weight_gradients[i] += error * sample[i];
                 }
                 bias_gradient += error;
             }

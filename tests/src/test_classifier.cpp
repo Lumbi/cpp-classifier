@@ -115,10 +115,10 @@ void test_l2_regularization_reduces_weights() {
     // L2 regularization should produce smaller weight magnitudes.
     using TrainingSet = trainer::Trainer<2>::TrainingSet;
     TrainingSet data = {
-        {{1.0f, 0.5f}, 1.0f},
-        {{0.5f, 1.0f}, 1.0f},
-        {{-1.0f, -0.5f}, 0.0f},
-        {{-0.5f, -1.0f}, 0.0f},
+        {1.0f, 0.5f, 1.0f},
+        {0.5f, 1.0f, 1.0f},
+        {-1.0f, -0.5f, 0.0f},
+        {-0.5f, -1.0f, 0.0f},
     };
 
     classifier::Model<2> model_unreg;
@@ -142,10 +142,10 @@ void test_l1_regularization_reduces_weights() {
     // L1 regularization should also produce smaller weight magnitudes.
     using TrainingSet = trainer::Trainer<2>::TrainingSet;
     TrainingSet data = {
-        {{1.0f, 0.5f}, 1.0f},
-        {{0.5f, 1.0f}, 1.0f},
-        {{-1.0f, -0.5f}, 0.0f},
-        {{-0.5f, -1.0f}, 0.0f},
+        {1.0f, 0.5f, 1.0f},
+        {0.5f, 1.0f, 1.0f},
+        {-1.0f, -0.5f, 0.0f},
+        {-0.5f, -1.0f, 0.0f},
     };
 
     classifier::Model<2> model_unreg;
@@ -168,8 +168,8 @@ void test_regularization_none_matches_baseline() {
     // to calling train without regularization parameters.
     using TrainingSet = trainer::Trainer<2>::TrainingSet;
     TrainingSet data = {
-        {{1.0f, 0.0f}, 1.0f},
-        {{0.0f, 1.0f}, 0.0f},
+        {1.0f, 0.0f, 1.0f},
+        {0.0f, 1.0f, 0.0f},
     };
 
     classifier::Model<2> model_a;
@@ -190,10 +190,10 @@ void test_regularization_preserves_correctness() {
     // Model trained with regularization should still classify correctly.
     using TrainingSet = trainer::Trainer<2>::TrainingSet;
     TrainingSet data = {
-        {{1.0f, 0.5f}, 1.0f},
-        {{0.5f, 1.0f}, 1.0f},
-        {{-1.0f, -0.5f}, 0.0f},
-        {{-0.5f, -1.0f}, 0.0f},
+        {1.0f, 0.5f, 1.0f},
+        {0.5f, 1.0f, 1.0f},
+        {-1.0f, -0.5f, 0.0f},
+        {-0.5f, -1.0f, 0.0f},
     };
 
     classifier::Model<2> model;
@@ -210,7 +210,7 @@ void test_regularization_preserves_correctness() {
 
 void test_negative_regularization_strength_throws() {
     using TrainingSet = trainer::Trainer<2>::TrainingSet;
-    TrainingSet data = {{{1.0f, 0.0f}, 1.0f}};
+    TrainingSet data = {{1.0f, 0.0f, 1.0f}};
 
     classifier::Model<2> model;
     trainer::Trainer<2> t(model);
@@ -223,6 +223,84 @@ void test_negative_regularization_strength_throws() {
     }
     assert(caught);
     std::cout << "  PASS: test_negative_regularization_strength_throws\n";
+}
+
+void test_deserialize_training_data() {
+    using TrainingSet = trainer::Trainer<2>::TrainingSet;
+    TrainingSet original = {
+        {1.0f, 0.5f, 1.0f},
+        {-1.0f, -0.5f, 0.0f},
+        {0.3f, 0.7f, 1.0f},
+    };
+
+    // Serialize: cols (size_t), rows (size_t), then row-major float data
+    std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
+    std::size_t cols = 3;
+    std::size_t rows = 3;
+    ss.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
+    ss.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
+    for (const auto& sample : original) {
+        ss.write(reinterpret_cast<const char*>(sample.data()),
+                 sizeof(float) * 3);
+    }
+
+    auto loaded = trainer::Trainer<2>::deserialize_training_data(ss);
+    assert(loaded.size() == 3);
+    for (std::size_t r = 0; r < 3; ++r) {
+        for (std::size_t c = 0; c < 3; ++c) {
+            assert(loaded[r][c] == original[r][c]);
+        }
+    }
+    std::cout << "  PASS: test_deserialize_training_data\n";
+}
+
+void test_deserialize_training_data_column_mismatch() {
+    std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
+    std::size_t cols = 4; // Trainer<2> expects 3 columns
+    std::size_t rows = 1;
+    ss.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
+    ss.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
+
+    bool caught = false;
+    try {
+        trainer::Trainer<2>::deserialize_training_data(ss);
+    } catch (const std::runtime_error&) {
+        caught = true;
+    }
+    assert(caught);
+    std::cout << "  PASS: test_deserialize_training_data_column_mismatch\n";
+}
+
+void test_deserialize_training_data_round_trip_train() {
+    // Deserialize training data, then use it to train a model successfully.
+    std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
+    std::size_t cols = 3;
+    std::size_t rows = 4;
+    ss.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
+    ss.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
+
+    std::array<std::array<float, 3>, 4> raw = {{
+        {1.0f, 0.5f, 1.0f},
+        {0.5f, 1.0f, 1.0f},
+        {-1.0f, -0.5f, 0.0f},
+        {-0.5f, -1.0f, 0.0f},
+    }};
+    for (const auto& row : raw) {
+        ss.write(reinterpret_cast<const char*>(row.data()), sizeof(float) * 3);
+    }
+
+    auto data = trainer::Trainer<2>::deserialize_training_data(ss);
+
+    classifier::Model<2> model;
+    trainer::Trainer<2> t(model);
+    t.train(data, 0.5f, 300);
+
+    auto pos = model.classify({1.0f, 0.5f});
+    assert(pos.get_prediction() == classifier::Prediction::positive);
+
+    auto neg = model.classify({-1.0f, -0.5f});
+    assert(neg.get_prediction() == classifier::Prediction::negative);
+    std::cout << "  PASS: test_deserialize_training_data_round_trip_train\n";
 }
 
 int main() {
@@ -240,6 +318,9 @@ int main() {
     test_regularization_none_matches_baseline();
     test_regularization_preserves_correctness();
     test_negative_regularization_strength_throws();
+    test_deserialize_training_data();
+    test_deserialize_training_data_column_mismatch();
+    test_deserialize_training_data_round_trip_train();
 
     std::cout << "All tests passed.\n";
     return 0;
