@@ -10,5 +10,4 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 enable_testing()
 
 add_subdirectory(classifier)
-add_subdirectory(trainer)
 add_subdirectory(tests)
