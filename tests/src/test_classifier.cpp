@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "classifier/model.h"
-#include "trainer/trainer.h"
+#include "classifier/trainer.h"
 
 void test_empty_features() {
     classifier::Model<0> model;
