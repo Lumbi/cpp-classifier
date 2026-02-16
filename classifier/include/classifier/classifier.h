@@ -3,6 +3,8 @@
 #include <array>
 #include <cstddef>
 
+#include "math.h"
+
 namespace classifier {
 
 enum class Prediction { unknown, positive, negative };
@@ -34,12 +36,7 @@ public:
         if constexpr (N == 0) {
             return {Prediction::unknown, 0.0};
         } else {
-            double sum = 0.0;
-            for (std::size_t i = 0; i < N; ++i) {
-                sum += features[i] * weights_[i];
-            }
-
-            double avg = sum / static_cast<double>(N);
+            double avg = dot(features, weights_) / static_cast<double>(N);
 
             if (avg >= 0.5) {
                 return {Prediction::positive, avg};
