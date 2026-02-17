@@ -77,7 +77,7 @@ public:
                 }
                 z += model_.bias();
 
-                float prediction = classifier::sigmoid(z);
+                float prediction = classifier::math::sigmoid(z);
                 float error = prediction - label;
 
                 for (std::size_t i = 0; i < N; ++i) {

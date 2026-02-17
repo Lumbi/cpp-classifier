@@ -8,7 +8,7 @@
 #include <ranges>
 #include <stdexcept>
 
-namespace classifier {
+namespace classifier::math {
 
 template <std::floating_point T>
 T sigmoid(T x) {
@@ -32,4 +32,4 @@ T dot(const std::array<T, N>& a, const std::array<T, N>& b) {
     return std::inner_product(a.begin(), a.end(), b.begin(), T(0));
 }
 
-} // namespace classifier
+} // namespace classifier::math

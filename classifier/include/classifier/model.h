@@ -26,7 +26,7 @@ public:
         if constexpr (N == 0) {
             return {Prediction::unknown, 0.0f};
         } else {
-            float score = sigmoid(dot(weights_, features) + bias_);
+            float score = math::sigmoid(math::dot(weights_, features) + bias_);
             if (score >= 0.5f) {
                 return {Prediction::positive, score};
             }
