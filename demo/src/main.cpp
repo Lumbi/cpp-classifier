@@ -51,11 +51,11 @@ int main() {
     std::cout << "Classification results:\n";
     for (const auto& tc : tests) {
         auto result = model.classify(tc.features);
-        const char* pred = (result.get_prediction() == classifier::Prediction::positive)
+        const char* pred = (result.prediction == classifier::Prediction::positive)
                                ? "positive"
                                : "negative";
         std::cout << "  " << tc.label << " -> " << pred
-                  << " (confidence: " << result.get_confidence() << ")\n";
+                  << " (confidence: " << result.confidence << ")\n";
     }
 
     return 0;

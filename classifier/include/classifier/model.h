@@ -12,17 +12,9 @@ namespace classifier {
 
 enum class Prediction { unknown, positive, negative };
 
-class Result {
-public:
-    Result(Prediction prediction, float confidence)
-        : prediction_(prediction), confidence_(confidence) {}
-
-    [[nodiscard]] Prediction get_prediction() const { return prediction_; }
-    [[nodiscard]] float get_confidence() const { return confidence_; }
-
-private:
-    Prediction prediction_;
-    float confidence_;
+struct Result {
+    Prediction prediction;
+    float confidence;
 };
 
 template <std::size_t N>

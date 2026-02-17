@@ -10,8 +10,8 @@
 void test_empty_features() {
     classifier::Model<0> model;
     auto result = model.classify({});
-    assert(result.get_prediction() == classifier::Prediction::unknown);
-    assert(result.get_confidence() == 0.0f);
+    assert(result.prediction == classifier::Prediction::unknown);
+    assert(result.confidence == 0.0f);
     std::cout << "  PASS: test_empty_features\n";
 }
 
@@ -21,8 +21,8 @@ void test_positive_classification() {
     model.set_weight(1, 1.0f);
     model.set_weight(2, 1.0f);
     auto result = model.classify({0.8f, 0.6f, 0.9f});
-    assert(result.get_prediction() == classifier::Prediction::positive);
-    assert(result.get_confidence() > 0.5f);
+    assert(result.prediction == classifier::Prediction::positive);
+    assert(result.confidence > 0.5f);
     std::cout << "  PASS: test_positive_classification\n";
 }
 
@@ -32,8 +32,8 @@ void test_negative_classification() {
     model.set_weight(1, -1.0f);
     model.set_weight(2, -1.0f);
     auto result = model.classify({0.1f, 0.2f, 0.1f});
-    assert(result.get_prediction() == classifier::Prediction::negative);
-    assert(result.get_confidence() > 0.5f);
+    assert(result.prediction == classifier::Prediction::negative);
+    assert(result.confidence > 0.5f);
     std::cout << "  PASS: test_negative_classification\n";
 }
 
@@ -74,8 +74,8 @@ void test_serialize_preserves_classification() {
     loaded.deserialize(ss);
     auto loaded_result = loaded.classify(features);
 
-    assert(original_result.get_prediction() == loaded_result.get_prediction());
-    assert(original_result.get_confidence() == loaded_result.get_confidence());
+    assert(original_result.prediction == loaded_result.prediction);
+    assert(original_result.confidence == loaded_result.confidence);
     std::cout << "  PASS: test_serialize_preserves_classification\n";
 }
 
@@ -201,10 +201,10 @@ void test_regularization_preserves_correctness() {
     t.train(data, 0.5f, 300, trainer::Regularization::l2, 0.1f);
 
     auto pos = model.classify({1.0f, 0.5f});
-    assert(pos.get_prediction() == classifier::Prediction::positive);
+    assert(pos.prediction == classifier::Prediction::positive);
 
     auto neg = model.classify({-1.0f, -0.5f});
-    assert(neg.get_prediction() == classifier::Prediction::negative);
+    assert(neg.prediction == classifier::Prediction::negative);
     std::cout << "  PASS: test_regularization_preserves_correctness\n";
 }
 
@@ -296,10 +296,10 @@ void test_deserialize_training_data_round_trip_train() {
     t.train(data, 0.5f, 300);
 
     auto pos = model.classify({1.0f, 0.5f});
-    assert(pos.get_prediction() == classifier::Prediction::positive);
+    assert(pos.prediction == classifier::Prediction::positive);
 
     auto neg = model.classify({-1.0f, -0.5f});
-    assert(neg.get_prediction() == classifier::Prediction::negative);
+    assert(neg.prediction == classifier::Prediction::negative);
     std::cout << "  PASS: test_deserialize_training_data_round_trip_train\n";
 }
 
