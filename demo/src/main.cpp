@@ -40,7 +40,7 @@ int main() {
     // Classify some test points
     struct TestCase {
         std::array<float, 2> features;
-        const char* label;
+        char const* label;
     };
 
     TestCase tests[] = {
@@ -52,9 +52,9 @@ int main() {
     };
 
     std::cout << "Classification results:\n";
-    for (const auto& tc : tests) {
+    for (auto const& tc : tests) {
         auto result = model.classify(tc.features);
-        const char* pred = (result.prediction == classifier::Prediction::positive)
+        char const* pred = (result.prediction == classifier::Prediction::positive)
                                ? "positive"
                                : "negative";
         std::cout << "  " << tc.label << " -> " << pred

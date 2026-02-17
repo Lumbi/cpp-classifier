@@ -28,7 +28,7 @@ T sigmoid(T x) noexcept {
 template <std::ranges::sized_range A, std::ranges::sized_range B>
     requires std::floating_point<std::ranges::range_value_t<A>> &&
              std::same_as<std::ranges::range_value_t<A>, std::ranges::range_value_t<B>>
-Error dot(const A& a, const B& b, std::ranges::range_value_t<A>& result) noexcept {
+Error dot(A const& a, B const& b, std::ranges::range_value_t<A>& result) noexcept {
     if (std::ranges::size(a) != std::ranges::size(b)) {
         return Error::size_mismatch;
     }
@@ -39,7 +39,7 @@ Error dot(const A& a, const B& b, std::ranges::range_value_t<A>& result) noexcep
 }
 
 template <std::floating_point T, std::size_t N>
-T dot(const std::array<T, N>& a, const std::array<T, N>& b) noexcept {
+T dot(std::array<T, N> const& a, std::array<T, N> const& b) noexcept {
     return std::inner_product(a.begin(), a.end(), b.begin(), T(0));
 }
 

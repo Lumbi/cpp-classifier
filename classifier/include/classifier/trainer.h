@@ -48,7 +48,7 @@ public:
         return Error::none;
     }
 
-    Error train(const TrainingSet& data, float learning_rate = 0.1f,
+    Error train(TrainingSet const& data, float learning_rate = 0.1f,
                 std::size_t epochs = 100,
                 Regularization regularization = Regularization::none,
                 float regularization_strength = 0.0f) noexcept {
@@ -63,7 +63,7 @@ public:
             std::array<float, N> weight_gradients{};
             float bias_gradient = 0.0f;
 
-            for (const auto& sample : data) {
+            for (auto const& sample : data) {
                 float label = sample[N];
 
                 float z = 0.0f;

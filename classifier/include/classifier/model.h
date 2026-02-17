@@ -21,7 +21,7 @@ class Model {
 public:
     Model() noexcept : weights_{}, bias_(0.0f) {}
 
-    Result classify(const std::array<float, N>& features) const noexcept {
+    Result classify(std::array<float, N> const& features) const noexcept {
         if constexpr (N == 0) {
             return {Prediction::unknown, 0.0f};
         } else {
@@ -42,9 +42,9 @@ public:
 
     Error serialize(std::ostream& os) const noexcept {
         std::size_t n = N;
-        os.write(reinterpret_cast<const char*>(&n), sizeof(n));
-        os.write(reinterpret_cast<const char*>(weights_.data()), sizeof(float) * N);
-        os.write(reinterpret_cast<const char*>(&bias_), sizeof(bias_));
+        os.write(reinterpret_cast<char const*>(&n), sizeof(n));
+        os.write(reinterpret_cast<char const*>(weights_.data()), sizeof(float) * N);
+        os.write(reinterpret_cast<char const*>(&bias_), sizeof(bias_));
         if (!os) {
             return Error::io_failed;
         }

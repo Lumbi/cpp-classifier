@@ -48,7 +48,9 @@ test/
 - All classifier headers are under `classifier/include/classifier/`
 - The classifier library is an `INTERFACE` CMake target (header-only)
 - Single top-level namespace `classifier`, with nested `classifier::math` for math utilities
-- Reference and pointer declarators bind to the type: `const int&`, not `const int &`
+- Reference and pointer declarators bind to the type: `int const&`, not `int const &`
+- East const: `const` goes after the type it qualifies: `int const&`, `char const*`, `auto const&`, not `const int&`
 - Binary serialization format: `[N (size_t), weights (N × float), bias (float)]`
-- `Model::deserialize` validates dimension match and throws `std::runtime_error` on mismatch
+- Error handling uses `classifier::Error` return codes, not exceptions. All public API functions are `noexcept`
+- `Model::deserialize` validates dimension match and returns `Error::dimension_mismatch` on mismatch
 - Tests cover: classification, serialization round-trips, regularization effects, edge cases (N=0, negative regularization strength)

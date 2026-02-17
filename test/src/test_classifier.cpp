@@ -226,10 +226,10 @@ void test_deserialize_training_data() {
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
     std::size_t cols = 3;
     std::size_t rows = 3;
-    ss.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
-    ss.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
-    for (const auto& sample : original) {
-        ss.write(reinterpret_cast<const char*>(sample.data()),
+    ss.write(reinterpret_cast<char const*>(&cols), sizeof(cols));
+    ss.write(reinterpret_cast<char const*>(&rows), sizeof(rows));
+    for (auto const& sample : original) {
+        ss.write(reinterpret_cast<char const*>(sample.data()),
                  sizeof(float) * 3);
     }
 
@@ -248,8 +248,8 @@ void test_deserialize_training_data_column_mismatch() {
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
     std::size_t cols = 4; // Trainer<2> expects 3 columns
     std::size_t rows = 1;
-    ss.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
-    ss.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
+    ss.write(reinterpret_cast<char const*>(&cols), sizeof(cols));
+    ss.write(reinterpret_cast<char const*>(&rows), sizeof(rows));
 
     classifier::Trainer<2>::TrainingSet out;
     assert(classifier::Trainer<2>::deserialize_training_data(ss, out)
@@ -262,8 +262,8 @@ void test_deserialize_training_data_round_trip_train() {
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
     std::size_t cols = 3;
     std::size_t rows = 4;
-    ss.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
-    ss.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
+    ss.write(reinterpret_cast<char const*>(&cols), sizeof(cols));
+    ss.write(reinterpret_cast<char const*>(&rows), sizeof(rows));
 
     std::array<std::array<float, 3>, 4> raw = {{
         {1.0f, 0.5f, 1.0f},
@@ -271,8 +271,8 @@ void test_deserialize_training_data_round_trip_train() {
         {-1.0f, -0.5f, 0.0f},
         {-0.5f, -1.0f, 0.0f},
     }};
-    for (const auto& row : raw) {
-        ss.write(reinterpret_cast<const char*>(row.data()), sizeof(float) * 3);
+    for (auto const& row : raw) {
+        ss.write(reinterpret_cast<char const*>(row.data()), sizeof(float) * 3);
     }
 
     classifier::Trainer<2>::TrainingSet data;
