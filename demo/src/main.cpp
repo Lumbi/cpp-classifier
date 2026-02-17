@@ -9,7 +9,7 @@ int main() {
     //   positive: points near (1, 1)
     //   negative: points near (-1, -1)
 
-    using Sample = trainer::Trainer<2>::Sample;
+    using Sample = classifier::Trainer<2>::Sample;
 
     std::vector<Sample> data = {
         { 1.0f,  1.0f, 1.0f},
@@ -27,7 +27,7 @@ int main() {
     std::cout << "Training a 2D binary classifier...\n";
 
     classifier::Model<2> model;
-    trainer::Trainer<2> t(model);
+    classifier::Trainer<2> t(model);
     t.train(data, /*learning_rate=*/0.5f, /*epochs=*/200);
 
     std::cout << "Learned weights: ["

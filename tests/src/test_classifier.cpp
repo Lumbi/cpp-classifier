@@ -113,7 +113,7 @@ void test_serialize_empty_model() {
 void test_l2_regularization_reduces_weights() {
     // Train two models on the same data: one without regularization, one with L2.
     // L2 regularization should produce smaller weight magnitudes.
-    using TrainingSet = trainer::Trainer<2>::TrainingSet;
+    using TrainingSet = classifier::Trainer<2>::TrainingSet;
     TrainingSet data = {
         {1.0f, 0.5f, 1.0f},
         {0.5f, 1.0f, 1.0f},
@@ -122,12 +122,12 @@ void test_l2_regularization_reduces_weights() {
     };
 
     classifier::Model<2> model_unreg;
-    trainer::Trainer<2> trainer_unreg(model_unreg);
+    classifier::Trainer<2> trainer_unreg(model_unreg);
     trainer_unreg.train(data, 0.5f, 200);
 
     classifier::Model<2> model_reg;
-    trainer::Trainer<2> trainer_reg(model_reg);
-    trainer_reg.train(data, 0.5f, 200, trainer::Regularization::l2, 0.5f);
+    classifier::Trainer<2> trainer_reg(model_reg);
+    trainer_reg.train(data, 0.5f, 200, classifier::Regularization::l2, 0.5f);
 
     float unreg_norm = model_unreg.weight(0) * model_unreg.weight(0)
                      + model_unreg.weight(1) * model_unreg.weight(1);
@@ -140,7 +140,7 @@ void test_l2_regularization_reduces_weights() {
 
 void test_l1_regularization_reduces_weights() {
     // L1 regularization should also produce smaller weight magnitudes.
-    using TrainingSet = trainer::Trainer<2>::TrainingSet;
+    using TrainingSet = classifier::Trainer<2>::TrainingSet;
     TrainingSet data = {
         {1.0f, 0.5f, 1.0f},
         {0.5f, 1.0f, 1.0f},
@@ -149,12 +149,12 @@ void test_l1_regularization_reduces_weights() {
     };
 
     classifier::Model<2> model_unreg;
-    trainer::Trainer<2> trainer_unreg(model_unreg);
+    classifier::Trainer<2> trainer_unreg(model_unreg);
     trainer_unreg.train(data, 0.5f, 200);
 
     classifier::Model<2> model_reg;
-    trainer::Trainer<2> trainer_reg(model_reg);
-    trainer_reg.train(data, 0.5f, 200, trainer::Regularization::l1, 0.5f);
+    classifier::Trainer<2> trainer_reg(model_reg);
+    trainer_reg.train(data, 0.5f, 200, classifier::Regularization::l1, 0.5f);
 
     float unreg_norm = std::abs(model_unreg.weight(0)) + std::abs(model_unreg.weight(1));
     float reg_norm = std::abs(model_reg.weight(0)) + std::abs(model_reg.weight(1));
@@ -166,19 +166,19 @@ void test_l1_regularization_reduces_weights() {
 void test_regularization_none_matches_baseline() {
     // Regularization::none with any strength should behave identically
     // to calling train without regularization parameters.
-    using TrainingSet = trainer::Trainer<2>::TrainingSet;
+    using TrainingSet = classifier::Trainer<2>::TrainingSet;
     TrainingSet data = {
         {1.0f, 0.0f, 1.0f},
         {0.0f, 1.0f, 0.0f},
     };
 
     classifier::Model<2> model_a;
-    trainer::Trainer<2> trainer_a(model_a);
+    classifier::Trainer<2> trainer_a(model_a);
     trainer_a.train(data, 0.1f, 50);
 
     classifier::Model<2> model_b;
-    trainer::Trainer<2> trainer_b(model_b);
-    trainer_b.train(data, 0.1f, 50, trainer::Regularization::none, 1.0f);
+    classifier::Trainer<2> trainer_b(model_b);
+    trainer_b.train(data, 0.1f, 50, classifier::Regularization::none, 1.0f);
 
     assert(model_a.weight(0) == model_b.weight(0));
     assert(model_a.weight(1) == model_b.weight(1));
@@ -188,7 +188,7 @@ void test_regularization_none_matches_baseline() {
 
 void test_regularization_preserves_correctness() {
     // Model trained with regularization should still classify correctly.
-    using TrainingSet = trainer::Trainer<2>::TrainingSet;
+    using TrainingSet = classifier::Trainer<2>::TrainingSet;
     TrainingSet data = {
         {1.0f, 0.5f, 1.0f},
         {0.5f, 1.0f, 1.0f},
@@ -197,8 +197,8 @@ void test_regularization_preserves_correctness() {
     };
 
     classifier::Model<2> model;
-    trainer::Trainer<2> t(model);
-    t.train(data, 0.5f, 300, trainer::Regularization::l2, 0.1f);
+    classifier::Trainer<2> t(model);
+    t.train(data, 0.5f, 300, classifier::Regularization::l2, 0.1f);
 
     auto pos = model.classify({1.0f, 0.5f});
     assert(pos.prediction == classifier::Prediction::positive);
@@ -209,15 +209,15 @@ void test_regularization_preserves_correctness() {
 }
 
 void test_negative_regularization_strength_throws() {
-    using TrainingSet = trainer::Trainer<2>::TrainingSet;
+    using TrainingSet = classifier::Trainer<2>::TrainingSet;
     TrainingSet data = {{1.0f, 0.0f, 1.0f}};
 
     classifier::Model<2> model;
-    trainer::Trainer<2> t(model);
+    classifier::Trainer<2> t(model);
 
     bool caught = false;
     try {
-        t.train(data, 0.1f, 10, trainer::Regularization::l2, -0.1f);
+        t.train(data, 0.1f, 10, classifier::Regularization::l2, -0.1f);
     } catch (const std::invalid_argument&) {
         caught = true;
     }
@@ -226,7 +226,7 @@ void test_negative_regularization_strength_throws() {
 }
 
 void test_deserialize_training_data() {
-    using TrainingSet = trainer::Trainer<2>::TrainingSet;
+    using TrainingSet = classifier::Trainer<2>::TrainingSet;
     TrainingSet original = {
         {1.0f, 0.5f, 1.0f},
         {-1.0f, -0.5f, 0.0f},
@@ -244,7 +244,7 @@ void test_deserialize_training_data() {
                  sizeof(float) * 3);
     }
 
-    auto loaded = trainer::Trainer<2>::deserialize_training_data(ss);
+    auto loaded = classifier::Trainer<2>::deserialize_training_data(ss);
     assert(loaded.size() == 3);
     for (std::size_t r = 0; r < 3; ++r) {
         for (std::size_t c = 0; c < 3; ++c) {
@@ -263,7 +263,7 @@ void test_deserialize_training_data_column_mismatch() {
 
     bool caught = false;
     try {
-        trainer::Trainer<2>::deserialize_training_data(ss);
+        classifier::Trainer<2>::deserialize_training_data(ss);
     } catch (const std::runtime_error&) {
         caught = true;
     }
@@ -289,10 +289,10 @@ void test_deserialize_training_data_round_trip_train() {
         ss.write(reinterpret_cast<const char*>(row.data()), sizeof(float) * 3);
     }
 
-    auto data = trainer::Trainer<2>::deserialize_training_data(ss);
+    auto data = classifier::Trainer<2>::deserialize_training_data(ss);
 
     classifier::Model<2> model;
-    trainer::Trainer<2> t(model);
+    classifier::Trainer<2> t(model);
     t.train(data, 0.5f, 300);
 
     auto pos = model.classify({1.0f, 0.5f});

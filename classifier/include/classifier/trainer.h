@@ -11,14 +11,14 @@
 #include "classifier/math.h"
 #include "classifier/model.h"
 
-namespace trainer {
+namespace classifier {
 
 enum class Regularization { none, l1, l2 };
 
 template <std::size_t N>
 class Trainer {
 public:
-    explicit Trainer(classifier::Model<N>& model) : model_(model) {}
+    explicit Trainer(Model<N>& model) : model_(model) {}
 
     using Sample = std::array<float, N + 1>;
     using TrainingSet = std::vector<Sample>;
@@ -77,7 +77,7 @@ public:
                 }
                 z += model_.bias();
 
-                float prediction = classifier::math::sigmoid(z);
+                float prediction = math::sigmoid(z);
                 float error = prediction - label;
 
                 for (std::size_t i = 0; i < N; ++i) {
@@ -108,7 +108,7 @@ public:
     }
 
 private:
-    classifier::Model<N>& model_;
+    Model<N>& model_;
 };
 
-} // namespace trainer
+} // namespace classifier
