@@ -28,7 +28,10 @@ int main() {
 
     classifier::Model<2> model;
     classifier::Trainer<2> t(model);
-    t.train(data, /*learning_rate=*/0.5f, /*epochs=*/200);
+    if (t.train(data, /*learning_rate=*/0.5f, /*epochs=*/200) != classifier::Error::none) {
+        std::cerr << "Training failed\n";
+        return 1;
+    }
 
     std::cout << "Learned weights: ["
               << model.weight(0) << ", " << model.weight(1) << "]\n";

@@ -45,10 +45,10 @@ void test_serialize_deserialize() {
     model.set_bias(0.25f);
 
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
-    model.serialize(ss);
+    assert(model.serialize(ss) == classifier::Error::none);
 
     classifier::Model<3> loaded;
-    loaded.deserialize(ss);
+    assert(loaded.deserialize(ss) == classifier::Error::none);
 
     assert(loaded.weight(0) == 1.5f);
     assert(loaded.weight(1) == -0.3f);
@@ -68,10 +68,10 @@ void test_serialize_preserves_classification() {
     auto original_result = model.classify(features);
 
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
-    model.serialize(ss);
+    assert(model.serialize(ss) == classifier::Error::none);
 
     classifier::Model<3> loaded;
-    loaded.deserialize(ss);
+    assert(loaded.deserialize(ss) == classifier::Error::none);
     auto loaded_result = loaded.classify(features);
 
     assert(original_result.prediction == loaded_result.prediction);
@@ -84,16 +84,10 @@ void test_deserialize_dimension_mismatch() {
     model.set_weight(0, 1.0f);
 
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
-    model.serialize(ss);
+    assert(model.serialize(ss) == classifier::Error::none);
 
     classifier::Model<2> wrong_size;
-    bool caught = false;
-    try {
-        wrong_size.deserialize(ss);
-    } catch (const std::runtime_error&) {
-        caught = true;
-    }
-    assert(caught);
+    assert(wrong_size.deserialize(ss) == classifier::Error::dimension_mismatch);
     std::cout << "  PASS: test_deserialize_dimension_mismatch\n";
 }
 
@@ -101,10 +95,10 @@ void test_serialize_empty_model() {
     classifier::Model<0> model;
 
     std::stringstream ss(std::ios::binary | std::ios::in | std::ios::out);
-    model.serialize(ss);
+    assert(model.serialize(ss) == classifier::Error::none);
 
     classifier::Model<0> loaded;
-    loaded.deserialize(ss);
+    assert(loaded.deserialize(ss) == classifier::Error::none);
 
     assert(loaded.bias() == 0.0f);
     std::cout << "  PASS: test_serialize_empty_model\n";
@@ -123,11 +117,11 @@ void test_l2_regularization_reduces_weights() {
 
     classifier::Model<2> model_unreg;
     classifier::Trainer<2> trainer_unreg(model_unreg);
-    trainer_unreg.train(data, 0.5f, 200);
+    assert(trainer_unreg.train(data, 0.5f, 200) == classifier::Error::none);
 
     classifier::Model<2> model_reg;
     classifier::Trainer<2> trainer_reg(model_reg);
-    trainer_reg.train(data, 0.5f, 200, classifier::Regularization::l2, 0.5f);
+    assert(trainer_reg.train(data, 0.5f, 200, classifier::Regularization::l2, 0.5f) == classifier::Error::none);
 
     float unreg_norm = model_unreg.weight(0) * model_unreg.weight(0)
                      + model_unreg.weight(1) * model_unreg.weight(1);
@@ -150,11 +144,11 @@ void test_l1_regularization_reduces_weights() {
 
     classifier::Model<2> model_unreg;
     classifier::Trainer<2> trainer_unreg(model_unreg);
-    trainer_unreg.train(data, 0.5f, 200);
+    assert(trainer_unreg.train(data, 0.5f, 200) == classifier::Error::none);
 
     classifier::Model<2> model_reg;
     classifier::Trainer<2> trainer_reg(model_reg);
-    trainer_reg.train(data, 0.5f, 200, classifier::Regularization::l1, 0.5f);
+    assert(trainer_reg.train(data, 0.5f, 200, classifier::Regularization::l1, 0.5f) == classifier::Error::none);
 
     float unreg_norm = std::abs(model_unreg.weight(0)) + std::abs(model_unreg.weight(1));
     float reg_norm = std::abs(model_reg.weight(0)) + std::abs(model_reg.weight(1));
@@ -174,11 +168,11 @@ void test_regularization_none_matches_baseline() {
 
     classifier::Model<2> model_a;
     classifier::Trainer<2> trainer_a(model_a);
-    trainer_a.train(data, 0.1f, 50);
+    assert(trainer_a.train(data, 0.1f, 50) == classifier::Error::none);
 
     classifier::Model<2> model_b;
     classifier::Trainer<2> trainer_b(model_b);
-    trainer_b.train(data, 0.1f, 50, classifier::Regularization::none, 1.0f);
+    assert(trainer_b.train(data, 0.1f, 50, classifier::Regularization::none, 1.0f) == classifier::Error::none);
 
     assert(model_a.weight(0) == model_b.weight(0));
     assert(model_a.weight(1) == model_b.weight(1));
@@ -198,7 +192,7 @@ void test_regularization_preserves_correctness() {
 
     classifier::Model<2> model;
     classifier::Trainer<2> t(model);
-    t.train(data, 0.5f, 300, classifier::Regularization::l2, 0.1f);
+    assert(t.train(data, 0.5f, 300, classifier::Regularization::l2, 0.1f) == classifier::Error::none);
 
     auto pos = model.classify({1.0f, 0.5f});
     assert(pos.prediction == classifier::Prediction::positive);
@@ -208,21 +202,16 @@ void test_regularization_preserves_correctness() {
     std::cout << "  PASS: test_regularization_preserves_correctness\n";
 }
 
-void test_negative_regularization_strength_throws() {
+void test_negative_regularization_strength() {
     using TrainingSet = classifier::Trainer<2>::TrainingSet;
     TrainingSet data = {{1.0f, 0.0f, 1.0f}};
 
     classifier::Model<2> model;
     classifier::Trainer<2> t(model);
 
-    bool caught = false;
-    try {
-        t.train(data, 0.1f, 10, classifier::Regularization::l2, -0.1f);
-    } catch (const std::invalid_argument&) {
-        caught = true;
-    }
-    assert(caught);
-    std::cout << "  PASS: test_negative_regularization_strength_throws\n";
+    assert(t.train(data, 0.1f, 10, classifier::Regularization::l2, -0.1f)
+           == classifier::Error::invalid_regularization_strength);
+    std::cout << "  PASS: test_negative_regularization_strength\n";
 }
 
 void test_deserialize_training_data() {
@@ -244,7 +233,8 @@ void test_deserialize_training_data() {
                  sizeof(float) * 3);
     }
 
-    auto loaded = classifier::Trainer<2>::deserialize_training_data(ss);
+    TrainingSet loaded;
+    assert(classifier::Trainer<2>::deserialize_training_data(ss, loaded) == classifier::Error::none);
     assert(loaded.size() == 3);
     for (std::size_t r = 0; r < 3; ++r) {
         for (std::size_t c = 0; c < 3; ++c) {
@@ -261,13 +251,9 @@ void test_deserialize_training_data_column_mismatch() {
     ss.write(reinterpret_cast<const char*>(&cols), sizeof(cols));
     ss.write(reinterpret_cast<const char*>(&rows), sizeof(rows));
 
-    bool caught = false;
-    try {
-        classifier::Trainer<2>::deserialize_training_data(ss);
-    } catch (const std::runtime_error&) {
-        caught = true;
-    }
-    assert(caught);
+    classifier::Trainer<2>::TrainingSet out;
+    assert(classifier::Trainer<2>::deserialize_training_data(ss, out)
+           == classifier::Error::dimension_mismatch);
     std::cout << "  PASS: test_deserialize_training_data_column_mismatch\n";
 }
 
@@ -289,11 +275,12 @@ void test_deserialize_training_data_round_trip_train() {
         ss.write(reinterpret_cast<const char*>(row.data()), sizeof(float) * 3);
     }
 
-    auto data = classifier::Trainer<2>::deserialize_training_data(ss);
+    classifier::Trainer<2>::TrainingSet data;
+    assert(classifier::Trainer<2>::deserialize_training_data(ss, data) == classifier::Error::none);
 
     classifier::Model<2> model;
     classifier::Trainer<2> t(model);
-    t.train(data, 0.5f, 300);
+    assert(t.train(data, 0.5f, 300) == classifier::Error::none);
 
     auto pos = model.classify({1.0f, 0.5f});
     assert(pos.prediction == classifier::Prediction::positive);
@@ -317,7 +304,7 @@ int main() {
     test_l1_regularization_reduces_weights();
     test_regularization_none_matches_baseline();
     test_regularization_preserves_correctness();
-    test_negative_regularization_strength_throws();
+    test_negative_regularization_strength();
     test_deserialize_training_data();
     test_deserialize_training_data_column_mismatch();
     test_deserialize_training_data_round_trip_train();
