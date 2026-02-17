@@ -9,7 +9,7 @@ int main() {
     //   positive: points near (1, 1)
     //   negative: points near (-1, -1)
 
-    using Sample = trainer::Trainer<2>::Sample;
+    using Sample = classifier::Trainer<2>::Sample;
 
     std::vector<Sample> data = {
         { 1.0f,  1.0f, 1.0f},
@@ -27,8 +27,11 @@ int main() {
     std::cout << "Training a 2D binary classifier...\n";
 
     classifier::Model<2> model;
-    trainer::Trainer<2> t(model);
-    t.train(data, /*learning_rate=*/0.5f, /*epochs=*/200);
+    classifier::Trainer<2> t(model);
+    if (t.train(data, /*learning_rate=*/0.5f, /*epochs=*/200) != classifier::Error::none) {
+        std::cerr << "Training failed\n";
+        return 1;
+    }
 
     std::cout << "Learned weights: ["
               << model.weight(0) << ", " << model.weight(1) << "]\n";
@@ -37,7 +40,7 @@ int main() {
     // Classify some test points
     struct TestCase {
         std::array<float, 2> features;
-        const char* label;
+        char const* label;
     };
 
     TestCase tests[] = {
@@ -49,13 +52,13 @@ int main() {
     };
 
     std::cout << "Classification results:\n";
-    for (const auto& tc : tests) {
+    for (auto const& tc : tests) {
         auto result = model.classify(tc.features);
-        const char* pred = (result.get_prediction() == classifier::Prediction::positive)
+        char const* pred = (result.prediction == classifier::Prediction::positive)
                                ? "positive"
                                : "negative";
         std::cout << "  " << tc.label << " -> " << pred
-                  << " (confidence: " << result.get_confidence() << ")\n";
+                  << " (confidence: " << result.confidence << ")\n";
     }
 
     return 0;

@@ -11,4 +11,4 @@ enable_testing()
 
 add_subdirectory(classifier)
 add_subdirectory(demo)
-add_subdirectory(tests)
+add_subdirectory(test)
